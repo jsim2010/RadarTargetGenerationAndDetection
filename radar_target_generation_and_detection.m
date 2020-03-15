@@ -189,6 +189,8 @@ offset = 10;
 
 % Use RDM[x,y] as the matrix from the output of 2D FFT for implementing
 % CFAR
+training_cell_num = ((2 * (Td + Gd)) + 1) * ((2 * (Tr + Gr)) + 1) - (Gr * Gd) - 1;
+
 for i = Tr + Gr + 1:(Nr / 2) - (Gr + Tr)
     for j = Td + Gd + 1:Nd - (Gd + Td)
         % *%TODO* :
@@ -203,7 +205,7 @@ for i = Tr + Gr + 1:(Nr / 2) - (Gr + Tr)
             end
         end
  
-        threshold = pow2db(noise_level / (((2 * (Td + Gd)) + 1) * ((2 * (Tr + Gr)) + 1) - (Gr * Gd) - 1));
+        threshold = pow2db(noise_level / training_cell_num);
         % Add the SNR offset to the threshold
         threshold = threshold + offset;
         % Measure the signal in Cell Under Test (CUT) and compare against
@@ -225,27 +227,10 @@ end
 %matrix. Hence,few cells will not be thresholded. To keep the map size same
 % set those values to 0. 
 
-for i = 1:Tr + Gr
-    for j = 1:Nd
-        RDM(i, j) = 0;
-    end
-end
-
-for i = Tr + Gr + 1:(Nr / 2) - (Gr + Tr)
-    for j = 1:Td + Gd
-        RDM(i, j) = 0;
-    end
-    
-    for j = Nd - (Gd + Td) + 1: Nd
-        RDM(i, j) = 0;
-    end
-end
-
-for i = (Nr / 2) - (Gr + Tr) + 1:(Nr / 2)
-    for j = 1:Nd
-        RDM(i, j) = 0;
-    end
-end
+RDM(1:Tr + Gr, 1:Nd) = 0;
+RDM(Tr + Gr + 1:(Nr / 2) - (Gr + Tr), 1:Td + Gd) = 0;
+RDM(Tr + Gr + 1:(Nr / 2) - (Gr + Tr), Nd - (Gd + Td) + 1:Nd) = 0;
+RDM((Nr / 2) - (Gr + Tr) + 1:(Nr / 2), 1:Nd) = 0;
 
 
 
